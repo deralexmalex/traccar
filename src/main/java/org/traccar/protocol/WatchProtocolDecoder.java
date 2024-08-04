@@ -256,9 +256,25 @@ public class WatchProtocolDecoder extends BaseProtocolDecoder {
 
                     getLastLocation(position, null);
 
-                    position.set(Position.KEY_BATTERY_LEVEL, Integer.parseInt(values[2]));
-                    position.set(Position.KEY_STEPS, Integer.parseInt(values[0]));
+                    // position.set(Position.KEY_BATTERY_LEVEL, Integer.parseInt(values[2]));
+                    // position.set(Position.KEY_STEPS, Integer.parseInt(values[0]));
+                    int steps = Integer.parseInt(values[0]);
+                    int rolling = Integer.parseInt(values[1]);
+                    int battery = Integer.parseInt(values[2]);
 
+                    position.set(Position.KEY_STEPS, steps);
+                    /*
+                        according to the docs the data order should be [steps, rolling, battery]
+                        but some versions have a bug which mises this up. This aims to catch the error
+                     */
+                    if (steps == 0 && battery == 0 && rolling > 0) {
+                        // fixup use rolling value as battery
+                        position.set(Position.KEY_BATTERY_LEVEL, rolling);
+                    } else {
+                        // per protocol
+                        position.set(Position.KEY_BATTERY_LEVEL, battery);
+
+                    }
                     return position;
                 }
             }
